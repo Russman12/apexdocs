@@ -70,6 +70,8 @@ export class Template {
     Handlebars.registerHelper('parseJSON', parseJSON);
     Handlebars.registerHelper('startsWith', startsWith);
     Handlebars.registerHelper('substring', substring);
+    Handlebars.registerHelper('urlEncode', urlEncode);
+    Handlebars.registerHelper('toJSON', toJSON);
   }
 
   public static getInstance(): Template {
@@ -176,4 +178,12 @@ const link = (source: StringOrLink): string => {
   } else {
     return `[${source.title}](${source.url})`;
   }
+};
+
+const urlEncode = (heading: string): string => {
+  return `${encodeURI(heading)}`;
+};
+
+const toJSON = (obj: object): string => {
+  return JSON.stringify(obj);
 };
