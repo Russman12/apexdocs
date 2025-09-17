@@ -119,4 +119,8 @@ export const markdownOptions: Record<keyof CliConfigurableMarkdownConfig, Option
     type: 'boolean',
     describe: 'Whether to include the inline help text for fields in the generated files.',
   },
+  customTemplateDir: {
+    type: 'string',
+    describe: 'Directory where custom template overrides are stored.',
+  },
 };

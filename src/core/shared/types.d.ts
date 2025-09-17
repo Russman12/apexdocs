@@ -45,6 +45,7 @@ export type CliConfigurableMarkdownConfig = {
   referenceGuideTitle: string;
   includeFieldSecurityMetadata: boolean;
   includeInlineHelpTextMetadata: boolean;
+  customTemplateDir?: string; // Optional directory for custom templates
 };
 
 export type UserDefinedMarkdownConfig = {

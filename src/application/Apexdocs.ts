@@ -19,6 +19,7 @@ import {
 import { resolveAndValidateSourceDirectories } from '#utils/source-directory-resolver';
 import { ReflectionError, ReflectionErrors, HookError } from '../core/errors/errors';
 import { FileReadingError, FileWritingError } from './errors';
+import * as path from 'path';
 
 /**
  * Application entry-point to generate documentation out of Apex source files.
@@ -29,6 +30,18 @@ export class Apexdocs {
    */
   static async generate(config: UserDefinedConfig, logger: Logger): Promise<E.Either<unknown[], string>> {
     logger.logSingle(`Generating ${config.targetGenerator} documentation...`);
+    
+    // Set custom template directory if provided (only for configs that support it)
+    if (
+      (config.targetGenerator === 'markdown' || config.targetGenerator === 'changelog') &&
+      typeof (config as UserDefinedMarkdownConfig).customTemplateDir === 'string' &&
+      (config as UserDefinedMarkdownConfig).customTemplateDir
+    ) {
+      const { Template } = await import('../core/template');
+      const dir = (config as UserDefinedMarkdownConfig).customTemplateDir!;
+      const absDir = path.isAbsolute(dir) ? dir : path.resolve(process.cwd(), dir);
+      Template.setCustomTemplateDir(absDir);
+    }
 
     try {
       switch (config.targetGenerator) {

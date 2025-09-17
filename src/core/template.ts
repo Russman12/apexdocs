@@ -10,6 +10,8 @@ import { fieldsPartialTemplate } from './markdown/templates/fieldsPartialTemplat
 import { classMarkdownTemplate } from './markdown/templates/class-template';
 import { enumMarkdownTemplate } from './markdown/templates/enum-template';
 import { interfaceMarkdownTemplate } from './markdown/templates/interface-template';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export type CompilationRequest = {
   template: string;
@@ -18,17 +20,43 @@ export type CompilationRequest = {
 
 export class Template {
   private static instance: Template;
+  private static customTemplateDir: string | undefined;
+
+  /**
+   * Set the custom template directory to use for overrides.
+   * Should be called before getInstance().
+   */
+  public static setCustomTemplateDir(dir: string) {
+    Template.customTemplateDir = dir;
+  }
 
   private constructor() {
-    Handlebars.registerPartial('typeDocumentation', typeDocPartial);
-    Handlebars.registerPartial('documentablePartialTemplate', documentablePartialTemplate);
-    Handlebars.registerPartial('methodsPartialTemplate', methodsPartialTemplate);
-    Handlebars.registerPartial('constructorsPartialTemplate', constructorsPartialTemplate);
-    Handlebars.registerPartial('groupedMembersPartialTemplate', groupedMembersPartialTemplate);
-    Handlebars.registerPartial('fieldsPartialTemplate', fieldsPartialTemplate);
-    Handlebars.registerPartial('classTemplate', classMarkdownTemplate);
-    Handlebars.registerPartial('enumTemplate', enumMarkdownTemplate);
-    Handlebars.registerPartial('interfaceTemplate', interfaceMarkdownTemplate);
+    // Template name to default value mapping
+    const templates: Record<string, string> = {
+      typeDocumentation: typeDocPartial,
+      documentablePartialTemplate: documentablePartialTemplate,
+      methodsPartialTemplate: methodsPartialTemplate,
+      constructorsPartialTemplate: constructorsPartialTemplate,
+      groupedMembersPartialTemplate: groupedMembersPartialTemplate,
+      fieldsPartialTemplate: fieldsPartialTemplate,
+      classTemplate: classMarkdownTemplate,
+      enumTemplate: enumMarkdownTemplate,
+      interfaceTemplate: interfaceMarkdownTemplate,
+    };
+
+    // If customTemplateDir is set, try to load each template from it
+    for (const [name, defaultValue] of Object.entries(templates)) {
+      let value = defaultValue;
+      if (Template.customTemplateDir) {
+        const customPath = path.join(Template.customTemplateDir, `${name}.hbs`);
+
+        if (fs.existsSync(customPath)) {
+          value = fs.readFileSync(customPath, 'utf8');
+        }
+      }
+
+      Handlebars.registerPartial(name, value);
+    }
 
     Handlebars.registerHelper('link', link);
     Handlebars.registerHelper('code', convertCodeBlock);
